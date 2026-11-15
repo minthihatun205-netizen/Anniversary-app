@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>❤️ Our's Anniversary</title>
+    <!-- Confetti Library for Celebration Fireworks -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        canvas#bgCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .lock-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 15, 25, 0.96);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+
+        .lock-screen.unlocked {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .lock-box {
+            background: rgba(17, 24, 39, 0.85);
+            border: 1px solid rgba(255, 75, 110, 0.3);
+            padding: 35px 30px;
+            border-radius: 24px;
+            max-width: 380px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .lock-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .lock-box h2 {
+            color: #fff;
+            margin-bottom: 6px;
+            font-size: 1.5rem;
+        }
+
+        .lock-box p {
+            color: #9ca3af;
+            font-size: 0.88rem;
+            margin-bottom: 20px;
+        }
+
+        .passcode-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 75, 110, 0.4);
+            color: #fff;
+            font-size: 1.4rem;
+            letter-spacing: 8px;
+            text-align: center;
+            padding: 12px;
+            border-radius: 12px;
+            width: 100%;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .passcode-input:focus {
+            border-color: #ff4b6e;
+            box-shadow: 0 0 15px rgba(255, 75, 110, 0.3);
+        }
+
+        .error-msg {
+            color: #ff4b6e;
+            font-size: 0.82rem;
+            height: 18px;
+            margin-bottom: 10px;
+        }
+
+        .music-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 50;
+            background: rgba(17, 24, 39, 0.8);
+            border: 1px solid rgba(255, 75, 110, 0.4);
+            color: #ff8da1;
+            padding: 10px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .music-btn:hover {
+            background: rgba(255, 75, 110, 0.2);
+            transform: scale(1.05);
+        }
+
+        .card {
+            position: relative;
+            z-index: 2;
+            background: rgba(17, 24, 39, 0.82);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 75, 110, 0.25);
+            padding: 38px 28px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 560px;
+            width: 90%;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 75, 110, 0.15);
+            margin: 20px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255, 75, 110, 0.15);
+            color: #ff4b6e;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+            border: 1px solid rgba(255, 75, 110, 0.3);
+            cursor: pointer;
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #fff 30%, #ff8da1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .couple-names {
+            font-size: 1.05rem;
+            color: #ff4b6e;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .timer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .time-box {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 10px 6px;
+            border-radius: 12px;
+        }
+
+        .time-box span {
+            display: block;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #fff;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .time-box span.bump {
+            transform: scale(1.25);
+            color: #ff4b6e;
+        }
+
+        .time-box label {
+            font-size: 0.65rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .message-box {
+            background: rgba(255, 75, 110, 0.06);
+            border-left: 3px solid #ff4b6e;
+            padding: 14px;
+            border-radius: 0 12px 12px 0;
+            text-align: left;
+            font-size: 0.92rem;
+            color: #d1d5db;
+            line-height: 1.5;
+            margin-bottom: 22px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #ff4b6e, #ff2a55);
+            color: white;
+            border: none;
+            padding: 11px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 51, 102, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 51, 102, 0.6);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #f3f4f6;
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: none;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: #111827;
+            border: 1px solid rgba(255, 75, 110, 0.3);
+            padding: 30px 25px;
+            border-radius: 20px;
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        .modal-content h3 {
+            color: #ff4b6e;
+            margin-bottom: 12px;
+        }
+
+        .modal-content p {
+            color: #d1d5db;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .quiz-question {
+            font-size: 1.05rem;
+            color: #fff;
+            margin-bottom: 18px;
+            font-weight: 500;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quiz-opt-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 75, 110, 0.3);
+            color: #f3f4f6;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.92rem;
+            transition: all 0.2s;
+        }
+
+        .quiz-opt-btn:hover {
+            background: rgba(255, 75, 110, 0.2);
+            border-color: #ff4b6e;
+        }
+
+        .quiz-opt-btn.correct {
+            background: rgba(16, 185, 129, 0.25);
+            border-color: #10b981;
+            color: #6ee7b7;
+        }
+
+        .quiz-opt-btn.wrong {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: #ef4444;
+            color: #fca5a5;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #ff8da1;
+            font-weight: bold;
+        }
+
+        .game-quote {
+            font-size: 0.82rem;
+            color: #d1d5db;
+            font-style: italic;
+            margin-bottom: 12px;
+            min-height: 20px;
+        }
+
+        .game-area {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 75, 110, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            cursor: crosshair;
+        }
+
+        .falling-heart {
+            position: absolute;
+            font-size: 26px;
+            cursor: pointer;
+            user-select: none;
+            animation: fall linear forwards;
+            filter: drop-shadow(0 0 5px rgba(255, 75, 110, 0.8));
+        }
+
+        @keyframes fall {
+            0% { top: -40px; }
+            100% { top: 260px; }
+        }
+
+        .game-over-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 15, 25, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .game-over-overlay.active {
+            display: flex;
+        }
+
+        .game-over-overlay h2 {
+            color: #ff4b6e;
+            font-size: 1.7rem;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lock-screen" id="lockScreen">
+        <div class="lock-box">
+            <div class="lock-icon">🔐</div>
+            <h2>Private Milestone</h2>
+            <p>Enter our special 5-digit passcode to unlock ❤️<br><small style="color:#ff8da1;">(Hint: Our special date)</small></p>
+            <input type="password" id="passInput" class="passcode-input" maxlength="5" placeholder="•••••" onkeyup="checkPasscodeEnter(event)">
+            <div class="error-msg" id="passError"></div>
+            <button class="btn" style="width: 100%;" onclick="verifyPasscode()">Unlock Heart 💖</button>
+        </div>
+    </div>
+
+    <audio id="bgMusic" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3" type="audio/mpeg">
+    </audio>
+    <button class="music-btn" id="musicBtn" onclick="toggleMusic()">
+        <span id="musicIcon">🎵</span> <span id="musicText">Play Music</span>
+    </button>
+
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="card">
+        <div class="badge" onclick="launchFireworks()" title="Click for Fireworks!">❤️ MILESTONE CELEBRATION ✨</div>
+        <h1 id="mainTitle">Happy Monthsary</h1>
+        <div class="couple-names">Min Thiha Tun & Shoon Lae Naing</div>
+
+        <div class="timer-grid">
+            <div class="time-box">
+                <span id="months">0</span>
+                <label>Months</label>
+            </div>
+            <div class="time-box">
+                <span id="days">0</span>
+                <label>Days</label>
+            </div>
+            <div class="time-box">
+                <span id="hours">0</span>
+                <label>Hours</label>
+            </div>
+            <div class="time-box">
+                <span id="mins">0</span>
+                <label>Mins</label>
+            </div>
+        </div>
+
+        <div class="message-box" id="messageBoxText">
+            "Loading your special message..."
+        </div>
+
+        <div class="btn-group">
+            <button class="btn" onclick="openModal('noteModal')">Read Note 💌</button>
+            <button class="btn btn-secondary" onclick="openModal('quizModal')">Love Quiz ❓</button>
+            <button class="btn btn-secondary" onclick="openModal('gameModal')">Mini Game 🎮</button>
+        </div>
+    </div>
+
+    <div class="modal" id="noteModal" onclick="closeModal(event, 'noteModal')">
+        <div class="modal-content">
+            <h3>To My Favorite Person 💖</h3>
+            <p id="modalNoteText">Loading secret note...</p>
+            <button class="btn" onclick="closeModalBtn('noteModal')">Close</button>
+        </div>
+    </div>
+
+    <div class="modal" id="quizModal" onclick="closeModal(event, 'quizModal')">
+        <div class="modal-content">
+            <h3>Love Quiz for BiBee ❓</h3>
+            <div id="quizContainer">
+                <div class="quiz-question" id="quizQuestion">Question loads here...</div>
+                <div class="quiz-options" id="quizOptions"></div>
+            </div>
+            <button class="btn btn-secondary" onclick="closeModalBtn('quizModal')">Close</button>
+        </div>
+    </div>
+
+    <div class="modal" id="gameModal" onclick="closeModal(event, 'gameModal')">
+        <div class="modal-content">
+            <h3>Catch the Hearts ❤️</h3>
+            <div class="game-header">
+                <span>Score: <strong id="scoreVal">0</strong></span>
+                <span>Level: <strong id="levelVal">1</strong></span>
+            </div>
+            <div class="game-quote" id="gameQuote">"Catch the falling hearts, BiBee!"</div>
+            
+            <div class="game-area" id="gameArea">
+                <div class="game-over-overlay" id="gameOverOverlay">
+                    <h2>Game Over! 💔</h2>
+                    <p style="margin-bottom: 15px;">You missed a heart! Score: <span id="finalScore">0</span></p>
+                    <button class="btn" onclick="startMiniGame()">Play Again 🔄</button>
+                </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="closeModalBtn('gameModal')">Exit</button>
+        </div>
+    </div>
+
+    <script>
+
+        const SECRET_PASSCODE = "20626";
+
+        function checkPasscodeEnter(e) {
+            if (e.key === "Enter") verifyPasscode();
+        }
+
+        function verifyPasscode() {
+            const input = document.getElementById('passInput').value;
+            const errorEl = document.getElementById('passError');
+            
+            if (input === SECRET_PASSCODE) {
+                document.getElementById('lockScreen').classList.add('unlocked');
+                launchFireworks();
+                playMusicAuto();
+            } else {
+                errorEl.innerText = "Wrong passcode! Please Try again.";
+                document.getElementById('passInput').value = '';
+            }
+        }
+
+        function launchFireworks() {
+            const duration = 2500;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#ff4b6e', '#ff8da1', '#ffffff']
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#ff4b6e', '#ff8da1', '#ffffff']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+
+        const bgMusic = document.getElementById('bgMusic');
+        let isPlaying = false;
+
+        function playMusicAuto() {
+            bgMusic.volume = 0.4;
+            bgMusic.play().then(() => {
+                isPlaying = true;
+                document.getElementById('musicIcon').innerText = "⏸️";
+                document.getElementById('musicText').innerText = "Pause Music";
+            }).catch(() => {
+
+            });
+        }
+
+        function toggleMusic() {
+            if (isPlaying) {
+                bgMusic.pause();
+                isPlaying = false;
+                document.getElementById('musicIcon').innerText = "🎵";
+                document.getElementById('musicText').innerText = "Play Music";
+            } else {
+                bgMusic.play();
+                isPlaying = true;
+                document.getElementById('musicIcon').innerText = "⏸️";
+                document.getElementById('musicText').innerText = "Pause Music";
+            }
+        }
+
+        const startDate = new Date('2026-06-20T00:00:00');
+
+        const milestoneMessages = {
+            1: "Our first month together, and every single day has felt like a dream. Thank you for walking into my life, BiBee.",
+            2: "Two months of endless smiles, sweet laughs, and growing closer to you. You're my favorite notification every day.",
+            3: "Three months of pure happiness. Thank you for being my safe space and my greatest comfort through everything.",
+            4: "Four months down, and my love for you deepens with every single heartbeat. You make everything so bright.",
+            5: "Every single moment with you is my favorite line of code. Thank you for being my safe space, my daily happiness, and my greatest inspiration.",
+            6: "Half a year of loving you! Six months of beautiful memories, and I fall more in love with you every single day.",
+            12: "One whole year of love, milestones, and endless happiness! Happy Anniversary, my forever favorite."
+        };
+
+        const modalNotes = {
+            1: "Dearest BiBee, completing our first month feels like writing the first successful script of my life. Thank you for making everything so bright.",
+            2: "Two months in, and you still give me butterflies every time we talk. Here's to countless more laughs and shared moments, BunniX.",
+            3: "Three months of holding hands and sharing our dreams. You are my greatest motivation, Min Thiha Tun's absolute favorite person.",
+            4: "Four months of building sweet memories together. No matter how busy or tired I get, talking to you fixes everything.",
+            5: "Five months down, and my love for you grows stronger every single second. Thank you for being my partner, my gamer duo, and my heart.",
+            6: "Half a year! Six months of pure joy. Looking at how far we've come, I know we're going to build an amazing future together.",
+            12: "One Year Anniversary! One whole year of beautiful love, milestones, and endless happiness. Thank you for staying by my side, forever and always."
+        };
+
+        function updateValue(id, newValue) {
+            const el = document.getElementById(id);
+            if (el.innerText !== String(newValue)) {
+                el.innerText = newValue;
+                el.classList.add('bump');
+                setTimeout(() => el.classList.remove('bump'), 200);
+            }
+        }
+
+        function updateLiveCounter() {
+            const now = new Date();
+            let years = now.getFullYear() - startDate.getFullYear();
+            let months = now.getMonth() - startDate.getMonth();
+            let totalMonths = years * 12 + months;
+            if (now.getDate() < startDate.getDate()) totalMonths--;
+
+            let pastDate = new Date(startDate);
+            pastDate.setMonth(pastDate.getMonth() + totalMonths);
+            let diffTime = now - pastDate;
+            let diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            let diffHours = now.getHours();
+            let diffMins = now.getMinutes();
+
+            const currentMonthsCount = totalMonths >= 0 ? totalMonths : 0;
+            
+            let titleText = "";
+            if (currentMonthsCount < 12) {
+                titleText = `Happy ${currentMonthsCount} Monthsary`;
+            } else {
+                let calcYears = Math.floor(currentMonthsCount / 12);
+                let remMonths = currentMonthsCount % 12;
+                titleText = remMonths === 0 ? `Happy ${calcYears} Year Anniversary` : `Happy ${calcYears} Year ${remMonths} Months Anniversary`;
+            }
+            document.getElementById('mainTitle').innerText = titleText;
+
+            let messageText = milestoneMessages[currentMonthsCount] || "Every single day with you is a blessing. Thank you for being my everything!";
+            document.getElementById('messageBoxText').innerText = `"${messageText}"`;
+
+            let modalText = modalNotes[currentMonthsCount] || "Every milestone with you feels like magic. Here's to countless more memories together! I love you so much, BiBee!";
+            document.getElementById('modalNoteText').innerText = `"${modalText}"`;
+
+            updateValue('months', currentMonthsCount);
+            updateValue('days', diffDays >= 0 ? diffDays : 0);
+            updateValue('hours', diffHours);
+            updateValue('mins', diffMins);
+        }
+
+        updateLiveCounter();
+        setInterval(updateLiveCounter, 1000);
+
+        const quizQuestions = [
+            {
+                q: "What is Min Thiha Tun's favorite nickname for you?",
+                options: ["Babe", "BiBee", "Tokki", "Honey"],
+                answer: 0
+            },
+            {
+                q: "What do we love doing together in MLBB?",
+                options: ["Playing Ranked Duo", "Trolling teammates", "Flirting and spamming love emotes ❤️", "All of the above"],
+                answer: 3
+            },
+            {
+                q: "How much does Min Thiha Tun love you?",
+                options: ["A little bit", "To the moon & back", "More than anything in the universe ❤️", "100%"],
+                answer: 2
+            }
+        ];
+
+        let currentQuizIdx = 0;
+        let quizScore = 0;
+
+        function startLoveQuiz() {
+            currentQuizIdx = 0;
+            quizScore = 0;
+            loadQuizQuestion();
+        }
+
+        function loadQuizQuestion() {
+            const container = document.getElementById('quizContainer');
+            if (currentQuizIdx >= quizQuestions.length) {
+                launchFireworks();
+                container.innerHTML = `
+                    <p style="font-size:1.1rem; color:#ff8da1; margin-bottom:15px;">
+                        🎉 You scored ${quizScore} / ${quizQuestions.length}!<br><br>
+                        You know me so well, Babe! 
+                        <br>
+                        I love you forever! 💖
+                    </p>
+                    <button class="btn" onclick="startLoveQuiz()" style="margin-bottom:15px;">Play Again 🔄</button>
+                `;
+                return;
+            }
+
+            const qObj = quizQuestions[currentQuizIdx];
+            container.innerHTML = `
+                <div class="quiz-question">${currentQuizIdx + 1}. ${qObj.q}</div>
+                <div class="quiz-options" id="quizOptions"></div>
+            `;
+
+            const optsDiv = document.getElementById('quizOptions');
+            qObj.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-opt-btn';
+                btn.innerText = optText;
+                btn.onclick = () => selectQuizAnswer(btn, idx, qObj.answer);
+                optsDiv.appendChild(btn);
+            });
+        }
+
+        function selectQuizAnswer(btn, selectedIdx, correctIdx) {
+            const allBtns = document.querySelectorAll('.quiz-opt-btn');
+            allBtns.forEach(b => b.disabled = true);
+
+            if (selectedIdx === correctIdx) {
+                btn.classList.add('correct');
+                quizScore++;
+                confetti({ particleCount: 30, spread: 60, origin: { y: 0.7 } });
+            } else {
+                btn.classList.add('wrong');
+                allBtns[correctIdx].classList.add('correct');
+            }
+
+            setTimeout(() => {
+                currentQuizIdx++;
+                loadQuizQuestion();
+            }, 1100);
+        }
+
+        let score = 0;
+        let heartSpawner = null;
+
+        const quotes = [
+            { score: 0, text: `"Catch the falling hearts, BiBee!"` },
+            { score: 3, text: `"Great start! You're doing amazing! ❤️"` },
+            { score: 7, text: `"Speed is increasing! Keep up, gamer! 🔥"` },
+            { score: 12, text: `"You're my absolute favorite duo partner! ✨"` },
+            { score: 20, text: `"Leveling up like our relationship! 🚀"` },
+            { score: 30, text: `"Unstoppable! You're breaking all records! 💖"` }
+        ];
+
+        function updateQuote(currentScore) {
+            let selectedText = quotes[0].text;
+            for (let q of quotes) {
+                if (currentScore >= q.score) selectedText = q.text;
+            }
+            document.getElementById('gameQuote').innerText = selectedText;
+        }
+
+        function startMiniGame() {
+            score = 0;
+            document.getElementById('scoreVal').innerText = score;
+            document.getElementById('levelVal').innerText = '1';
+            updateQuote(0);
+            document.getElementById('gameOverOverlay').classList.remove('active');
+            
+            const gameArea = document.getElementById('gameArea');
+            gameArea.querySelectorAll('.falling-heart').forEach(h => h.remove());
+            if (heartSpawner) clearTimeout(heartSpawner);
+            spawnHeartLoop();
+        }
+
+        function spawnHeartLoop() {
+            const gameArea = document.getElementById('gameArea');
+            let level = Math.floor(score / 5) + 1;
+            document.getElementById('levelVal').innerText = level;
+            
+            let fallDuration = Math.max(1.2, 3.2 - (score * 0.1));
+            let spawnIntervalTime = Math.max(400, 1000 - (score * 35));
+
+            heartSpawner = setTimeout(() => {
+                if (!document.getElementById('gameModal').classList.contains('active')) return;
+
+                const heart = document.createElement('div');
+                heart.className = 'falling-heart';
+                heart.innerHTML = ['❤️', '💖', '💗', '💓'][Math.floor(Math.random() * 4)];
+                heart.style.left = (Math.random() * (gameArea.clientWidth - 40)) + 'px';
+                heart.style.animationDuration = fallDuration + 's';
+
+                let isCaught = false;
+                const catchAction = (e) => {
+                    e.stopPropagation();
+                    if (isCaught) return;
+                    isCaught = true;
+                    score++;
+                    document.getElementById('scoreVal').innerText = score;
+                    updateQuote(score);
+                    heart.remove();
+                };
+
+                heart.onmousedown = catchAction;
+                heart.ontouchstart = catchAction;
+
+                setTimeout(() => {
+                    if (!isCaught) {
+                        isCaught = true;
+                        heart.remove();
+                        triggerGameOver();
+                    }
+                }, fallDuration * 1000);
+
+                gameArea.appendChild(heart);
+                if (!document.getElementById('gameOverOverlay').classList.contains('active')) {
+                    spawnHeartLoop();
+                }
+            }, spawnIntervalTime);
+        }
+
+        function triggerGameOver() {
+            if (heartSpawner) clearTimeout(heartSpawner);
+            document.getElementById('gameArea').querySelectorAll('.falling-heart').forEach(h => h.remove());
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('gameOverOverlay').classList.add('active');
+        }
+
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor(x, y, radius, color, velocity) {
+                this.x = x; this.y = y; this.radius = radius;
+                this.color = color; this.velocity = velocity;
+                this.alpha = Math.random() * 0.8 + 0.2;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+            update() {
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                if (this.alpha > 0.01) this.alpha -= 0.002;
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (particles.length < 35) {
+                particles.push(new Particle(
+                    Math.random() * canvas.width, canvas.height + 10,
+                    Math.random() * 2 + 1, '#ff4b6e',
+                    { x: (Math.random() - 0.5) * 0.5, y: -Math.random() * 1.5 - 0.5 }
+                ));
+            }
+            particles.forEach((p, i) => {
+                p.update(); p.draw();
+                if (p.y < -10 || p.alpha <= 0.01) particles.splice(i, 1);
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            if (modalId === 'gameModal') startMiniGame();
+            if (modalId === 'quizModal') startLoveQuiz();
+        }
+
+        function closeModalBtn(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            if (modalId === 'gameModal' && heartSpawner) clearTimeout(heartSpawner);
+        }
+
+        function closeModal(e, modalId) {
+            if (e.target.id === modalId) {
+                document.getElementById(modalId).classList.remove('active');
+                if (modalId === 'gameModal' && heartSpawner) clearTimeout(heartSpawner);
+            }
+        }
+    </script>
+</body>
+</html>
